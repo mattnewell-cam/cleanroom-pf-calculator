@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Compare overpressure and filter-efficiency options for a pressurised room or house, with wind infiltration modelled from 5 years of US airport weather.">
+<meta name="description" content="Clean room PF calculator: add more filtration or increase the positive pressure? Wind infiltration modelled from 5 years of US airport weather.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Pressure or Filter?</title>
+<title>Clean Room PF Calculator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -112,8 +112,8 @@ svg .axl { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
 
 <div class="wrap">
   <header>
-    <h1>Pressure or filter?</h1>
-    <p>Time-averaged protection of a pressurised room or house, counting both filter leakage and wind-driven infiltration. Wind comes from 5 years of hourly records (2019–2023) at the airports of the 60 largest US metros.</p>
+    <h1>Clean Room PF Calculator</h1>
+    <p>Add more filtration or increase the positive pressure?</p>
   </header>
 
   <div class="grid">
@@ -177,10 +177,10 @@ svg .axl { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
           <div class="field">
             <span class="lab">One measured point of your leakage</span>
             <div class="row2">
-              <div class="field"><label for="qref" class="hint">Fan flow (L/min)</label><input type="number" id="qref" value="472" min="1" step="1"></div>
-              <div class="field"><label for="pref" class="hint">Gave pressure (Pa)</label><input type="number" id="pref" value="25" min="0.5" step="0.5"></div>
+              <div class="field"><label for="qref" class="hint">Fan flow (m³/h)</label><input type="number" id="qref" value="72" min="0.1" step="1"></div>
+              <div class="field"><label for="pref" class="hint">Gave pressure (Pa)</label><input type="number" id="pref" value="50" min="0.5" step="0.5"></div>
             </div>
-            <span class="hint">Sets the fan flow at each overpressure, Q ∝ Δp<sup>0.65</sup>. Only matters if a purifier or deposition is set. Default is a 20 cm² leak.</span>
+            <span class="hint">Sets the fan flow needed to hold each overpressure through the room's leaks, Q ∝ Δp<sup>0.65</sup>. Only changes the protection factor if a purifier or deposition is set. Default: a sealed bedroom measured at 72 m³/h at 50 Pa (36 cm² effective leak area), which is 16 m³/h at 5 Pa.</span>
           </div>
           <div class="row2">
             <div class="field"><label for="vol">Volume (m³)</label><input type="number" id="vol" value="30" min="1" step="1"></div>
@@ -220,7 +220,7 @@ svg .axl { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
 
   <section class="panel how">
     <h2>How it is calculated</h2>
-    <p>For every hourly record (2-minute mean wind speed and direction at 10 m, and outdoor temperature) the model works out how much unfiltered air gets in, as a fraction <span class="mono">f</span> of the fan's filtered flow, and averages <span class="mono">f</span> over the period.</p>
+    <p>Weather comes from 5 years of hourly records (2019–2023) at the airports of the 60 largest US metros. For every record (2-minute mean wind speed and direction at 10 m, and outdoor temperature) the model works out how much unfiltered air gets in, as a fraction <span class="mono">f</span> of the fan's filtered flow, and averages <span class="mono">f</span> over the period.</p>
     <ol>
       <li>Airport wind is converted to wind at 6 m in the chosen terrain (×0.93 open, ×0.64 suburban; <a href="https://handbook.ashrae.org/Handbooks/F17/SI/f17_ch24/f17_ch24_si.aspx">ASHRAE Fundamentals ch. 24</a>).</li>
       <li>Each wall's pressure is <span class="mono">Cp(angle) × ½ρU²</span>, with Cp for the surroundings from <a href="https://aivc.org/sites/default/files/members_area/medias/pdf/Technotes/TN44%20NUMERICAL%20DATA%20FOR%20AIR%20INFILTRATION.PDF">AIVC Technical Note 44</a>. Gusts add a random part with rms 0.2–0.5 × ½ρU² (<a href="https://par.nsf.gov/servlets/purl/10492024">An &amp; Jung 2023</a>), independent for each wall and the roof.</li>
@@ -340,14 +340,14 @@ function readCfg() {
   return {
     mode, season: $('season').value, shel: $('shel').value, orient: $('orient').value,
     phi: +$('phi').value / 100, idx: stationsFor($('loc').value),
-    qref: +$('qref').value || 472, pref: +$('pref').value || 25,
+    qref: +$('qref').value || 72, pref: +$('pref').value || 50,
     vol: +$('vol').value || 0, cadr: +$('cadr').value || 0, kdep: +$('kdep').value || 0,
   };
 }
 function evalOpt(c, pm, eff, phi = c.phi) {
   const f = fInf(c, pm, phi);
   const Pf = Math.max(0, 1 - eff / 100);
-  const Q = c.qref * 0.06 * Math.pow(pm / c.pref, NEXP); // m3/h
+  const Q = c.qref * Math.pow(pm / c.pref, NEXP); // m3/h
   const extra = (c.cadr + c.kdep * c.vol) / Q;
   const conc = (Pf + f) / (1 + f + extra);
   return { f, Pf, Q, pf: conc > 0 ? 1 / conc : Infinity };
@@ -397,7 +397,7 @@ function update() {
         <dt>Through the filter</dt><dd>${fmtPct(r.Pf)}</dd>
         <dt>Wind infiltration</dt><dd>${fmtPct(r.f)}</dd>
         <dt>Share from wind</dt><dd>${Math.round(wShare * 100)}%</dd>
-        <dt>Fan flow</dt><dd>${Math.round(r.Q / 0.06)} L/min</dd>
+        <dt>Fan flow</dt><dd>${r.Q < 10 ? r.Q.toFixed(1) : Math.round(r.Q)} m³/h</dd>
       </dl>`;
     cards.append(el);
   });
