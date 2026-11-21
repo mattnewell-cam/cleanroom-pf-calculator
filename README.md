@@ -1,11 +1,11 @@
-# Clean Room PF Calculator
+# Cleanroom PF Calculator
 
 Add more filtration or increase the positive pressure? For a room or house pressurised with
 filtered air, this compares options of (overpressure, filter efficiency) by time-averaged
 protection factor, counting both the air that passes through the filter and the unfiltered outdoor
 air that wind pushes in through leaks.
 
-**Live page:** https://mattnewell-cam.github.io/clean-room-pf-calculator/
+**Live page:** https://mattnewell-cam.github.io/cleanroom-pf-calculator/
 
 Wind infiltration is modelled hour by hour from 5 years (2019–2023) of NOAA ISD-lite airport
 records for the 60 largest US metros: airport wind scaled to house height for the terrain, wall
