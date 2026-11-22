@@ -12,4 +12,5 @@ records for the 60 largest US metros: airport wind scaled to house height for th
 pressure coefficients and gust levels from published low-rise building data, house and room
 pressures solved from power-law leak flows (exponent 0.65) with a fixed-flow supply fan. The
 page's "How it is calculated" section gives the steps and sources. The page is a single
-self-contained HTML file with the model results embedded.
+self-contained HTML file with the model results embedded. A Metric | Imperial toggle shows fan flow
+and purifier CADR in CFM and room volume in ft³; pressures stay in Pa.
